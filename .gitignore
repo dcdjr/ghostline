@@ -2,4 +2,4 @@ __pycache__/
 .venv/
 PROJECT.md
 NOTES.md
-ghostline.db
+*.db
