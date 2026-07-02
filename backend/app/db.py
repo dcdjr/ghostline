@@ -6,7 +6,7 @@ from pathlib import Path
 DB_PATH: Path = Path("ghostline.db")
 
 
-def get_conn():
+def get_conn() -> sqlite3.Connection:
     # If the file doesn't exist, sqlite creates it
     conn = sqlite3.connect(DB_PATH)
     # This makes sqlite treat rows as dictionaries instead of tuples.
@@ -14,17 +14,36 @@ def get_conn():
     return conn
 
 
-def init_db():
+def init_db() -> None:
     conn = get_conn()
 
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS rooms (
-            id TEXT PRIMARY KEY,
-            created_at TEXT NOT NULL
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS rooms (
+                id TEXT PRIMARY KEY,
+                created_at TEXT NOT NULL
+            )
+            """
         )
-        """
-    )
 
-    conn.commit() # Persists the schema change
-    conn.close()
+        conn.commit() # Persists the schema change
+    finally:
+        conn.close()
+
+
+def insert_room(room_id: str, created_at: str) -> None:
+    conn = get_conn()
+
+    try:
+        conn.execute(
+            """
+            INSERT INTO rooms (id, created_at)
+            VALUES (?, ?)
+            """,
+            (room_id, created_at),
+        )
+
+        conn.commit()
+    finally:
+        conn.close()
